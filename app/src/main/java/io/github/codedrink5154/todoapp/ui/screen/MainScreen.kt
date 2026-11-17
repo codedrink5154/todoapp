@@ -6,6 +6,8 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.Text
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.*
 import androidx.compose.runtime.Composable
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
@@ -50,6 +52,12 @@ fun MainScreen(user: String?) {
         NavDisplay(
             backStack = BackStack.stack,
             onBack = { BackStack.goBack() },
+            transitionSpec = {
+                fadeIn(animationSpec = snap()) togetherWith fadeOut(animationSpec = snap())
+            },
+            popTransitionSpec = {
+                fadeIn(animationSpec = snap()) togetherWith fadeOut(animationSpec = snap())
+            },
             entryProvider = entryProvider {
                 entry<Auth> { AuthScreen(innerPadding) }
                 entry<TodoList> { TodoListScreen(innerPadding) }
