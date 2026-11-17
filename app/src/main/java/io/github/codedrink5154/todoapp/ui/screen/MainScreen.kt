@@ -56,18 +56,18 @@ fun MainScreen() {
 
     Scaffold(
         topBar = {
-            if (current == UserModify) {
-                BackTopBar()
-            } else {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = "AutoGTD",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.secondary,
-                        )
-                    },
-                )
+            when (current) {
+                UserModify -> BackTopBar("修改资料")
+                else ->
+                    TopAppBar(
+                        title = {
+                            Text(
+                                text = "AutoGTD",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = MaterialTheme.colorScheme.secondary,
+                            )
+                        },
+                    )
             }
         },
         bottomBar = {
@@ -98,11 +98,11 @@ fun MainScreen() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BackTopBar() {
+fun BackTopBar(text: String) {
     TopAppBar(
         title = {
             Text(
-                text = "编辑资料",
+                text = text,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Medium,
             )

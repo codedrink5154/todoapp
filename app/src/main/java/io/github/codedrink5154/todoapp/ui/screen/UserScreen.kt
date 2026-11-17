@@ -38,7 +38,7 @@ fun UserScreen(innerPadding: PaddingValues) {
     ) {
         UserInfoCard()
         OutlinedCard(
-            modifier = Modifier.fillMaxWidth().wrapContentSize().clickable { BackStack.goBack() }
+            modifier = Modifier.fillMaxWidth().wrapContentSize().clickable { BackStack.push(UserModify) }
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp).padding(horizontal = 16.dp)
