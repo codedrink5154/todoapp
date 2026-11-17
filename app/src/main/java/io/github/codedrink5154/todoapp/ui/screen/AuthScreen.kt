@@ -26,7 +26,7 @@ import io.github.codedrink5154.todoapp.navigation.BackStack
 import io.github.codedrink5154.todoapp.navigation.TodoList
 
 @Composable
-fun AuthScreen(viewModel: AuthViewModel = viewModel()) {
+fun AuthScreen(innerPadding: PaddingValues, viewModel: AuthViewModel = viewModel()) {
     val isRegister = viewModel.isRegister.collectAsStateWithLifecycle().value
 
     val userName = viewModel.name.collectAsStateWithLifecycle().value
@@ -38,15 +38,9 @@ fun AuthScreen(viewModel: AuthViewModel = viewModel()) {
 
     Column(
         // 防止输入法挡住输入框
-        modifier = Modifier.fillMaxSize().imePadding().padding(horizontal = 24.dp),
+        modifier = Modifier.fillMaxSize().imePadding().padding(innerPadding).padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
-            text = if (isRegister) "注册" else "登录",
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.primary,
-        )
-
         Box(
             modifier = Modifier.weight(1f).fillMaxWidth(),
             contentAlignment = Alignment.Center,
@@ -105,17 +99,28 @@ fun AuthScreen(viewModel: AuthViewModel = viewModel()) {
                     )
 
                     if (!isRegister) {
+                        // 登录按钮
                         Button(
                             onClick = {
                                 if (viewModel.tryLogin(userName, password)) {
+                                    // 清理密码
+                                    viewModel.updatePassword("")
+                                    // 切换至待办页面
                                     BackStack.switchTab(TodoList)
+                                    // 自动登录，保存登录的用户名
+                                    val sp = context.getSharedPreferences("lastUser", Context.MODE_PRIVATE)
+                                    with(sp.edit()) {
+                                        putString("lastUser", userName)
+                                        apply()
+                                    }
+
                                     Toast.makeText(context, "登录成功!", Toast.LENGTH_SHORT).show()
                                 } else {
                                     Toast.makeText(context, "用户名或密码错误", Toast.LENGTH_SHORT).show()
                                     viewModel.updatePassword("")
                                 }
                             },
-                            enabled = userName.isNotEmpty() && password.isNotEmpty(),
+                            enabled = userName.isNotBlank() && password.isNotBlank(),
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Text(
@@ -151,7 +156,7 @@ fun AuthScreen(viewModel: AuthViewModel = viewModel()) {
                             visualTransformation = PasswordVisualTransformation('*'),
                             modifier = Modifier.fillMaxWidth(),
                         )
-                        if (repeatPassword.isNotEmpty() && password != repeatPassword) {
+                        if (repeatPassword.isNotBlank() && password != repeatPassword) {
                             Text(
                                 text = "两次输入的密码不一致",
                                 style = MaterialTheme.typography.bodySmall,
@@ -175,9 +180,9 @@ fun AuthScreen(viewModel: AuthViewModel = viewModel()) {
                             },
 
                             enabled =
-                                userName.isNotEmpty() &&
-                                        password.isNotEmpty() &&
-                                        repeatPassword.isNotEmpty() &&
+                                userName.isNotBlank() &&
+                                        password.isNotBlank() &&
+                                        repeatPassword.isNotBlank() &&
                                         password == repeatPassword,
                             modifier = Modifier.fillMaxWidth(),
                         ) { Text("注册") }

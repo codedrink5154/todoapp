@@ -42,16 +42,18 @@ fun MainScreen(user: String?) {
             )
         },
         bottomBar = {
-            BottomNavBar(BackStack.getCurrent() ?: TodoList)
+            if (BackStack.getCurrent() != Auth) {
+                BottomNavBar(BackStack.getCurrent() ?: TodoList)
+            }
         }
     ) { innerPadding ->
         NavDisplay(
             backStack = BackStack.stack,
             onBack = { BackStack.goBack() },
             entryProvider = entryProvider {
-                entry<Auth> { AuthScreen() }
+                entry<Auth> { AuthScreen(innerPadding) }
                 entry<TodoList> { TodoListScreen(innerPadding) }
-                entry<Focus> { FocusScreen() }
+                entry<Focus> { FocusScreen(innerPadding) }
                 entry<User> { UserScreen(innerPadding) }
             },
         )
