@@ -22,49 +22,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.codedrink5154.todoapp.MainActivity
 import io.github.codedrink5154.todoapp.viewmodel.AuthViewModel
-
-// 注册新的用户
-fun registerNewAccount(context: Context, name: String, passwd: String): Boolean {
-    TODO("需要更加完善的注册机制, 而不是使用sharedPreferences")
-    val sharedPreference = context.getSharedPreferences("shadow", Context.MODE_PRIVATE)
-
-    // 读取指定用户的密码
-    val realPassword = sharedPreference.getString(name, null)
-
-    // 如果不为空，说明这个用户已经存在，不予注册
-    if (realPassword != null) {
-        return false
-    } else {
-        // 注册并apply()
-        with(sharedPreference.edit()) {
-            putString(name, passwd)
-            apply()
-        }
-        return true
-    }
-}
-
-// 登录,返回一个Boolean，表示登录是否成功
-fun tryLogin(context: Context, name: String, password: String): Boolean {
-    // 读取shadow.xml,创建sp对象
-    val sharedPreference = context.getSharedPreferences("shadow", Context.MODE_PRIVATE)
-    val realPassword = sharedPreference.getString(name, null)
-
-    var res = false
-
-    if (realPassword == password) {
-        res = true
-        // 持久化登录状态，通过sp实现
-        val isLogged = context.getSharedPreferences("log_state", Context.MODE_PRIVATE)
-        with(isLogged.edit()) {
-            // 写入
-            putBoolean("isLogged", true)
-            apply()
-        }
-    }
-
-    return res
-}
+import io.github.codedrink5154.todoapp.navigation.BackStack
+import io.github.codedrink5154.todoapp.navigation.TodoList
 
 @Composable
 fun AuthScreen(viewModel: AuthViewModel = viewModel()) {
@@ -148,7 +107,8 @@ fun AuthScreen(viewModel: AuthViewModel = viewModel()) {
                     if (!isRegister) {
                         Button(
                             onClick = {
-                                if (tryLogin(context, userName, password)) {
+                                if (viewModel.tryLogin(userName, password)) {
+                                    BackStack.switchTab(TodoList)
                                     Toast.makeText(context, "登录成功!", Toast.LENGTH_SHORT).show()
                                 } else {
                                     Toast.makeText(context, "用户名或密码错误", Toast.LENGTH_SHORT).show()
@@ -201,7 +161,7 @@ fun AuthScreen(viewModel: AuthViewModel = viewModel()) {
                         Button(
                             // 在这里切换Activity
                             onClick = {
-                                val res = registerNewAccount(context, userName, password)
+                                val res = viewModel.registerNewAccount(userName, password)
                                 if (res) {
                                     Toast.makeText(context, "注册成功!", Toast.LENGTH_SHORT).show()
                                     viewModel.switchRegisterState()

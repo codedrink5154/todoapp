@@ -37,4 +37,15 @@ class AuthViewModel : ViewModel() {
     fun switchRegisterState() {
         _isRegister.update { !it }
     }
+
+    // 注册新的用户
+    fun registerNewAccount(name: String, passwd: String): Boolean {
+        TODO("需要更加完善的注册机制, 而不是使用sharedPreferences")
+    }
+
+    // 登录,返回一个Boolean，表示登录是否成功
+    // TODO
+    fun tryLogin(name: String, password: String): Boolean {
+        return true
+    }
 }
