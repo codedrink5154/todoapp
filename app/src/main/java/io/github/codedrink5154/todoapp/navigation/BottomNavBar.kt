@@ -29,8 +29,8 @@ fun BottomNavBar(currentTab: NavKey) {
             icon = { Icon(Icons.Default.Timer, contentDescription = "专注") }
         )
         NavigationBarItem(
-            selected = currentTab == User,
-            onClick = { BackStack.switchTab(User) },
+            selected = currentTab == UserPage,
+            onClick = { BackStack.switchTab(UserPage) },
             label = { Text("我的") },
             icon = { Icon(Icons.Default.AccountCircle, contentDescription = "我的") }
         )

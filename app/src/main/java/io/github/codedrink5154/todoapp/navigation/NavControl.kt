@@ -7,12 +7,19 @@ object BackStack {
 
     var stack = NavBackStack<NavKey>()
 
+    fun getLength(): Int {
+        return stack.count()
+    }
+
     fun getCurrent(): NavKey? = stack.lastOrNull()
 
+    fun push(destination: NavKey) {
+        stack.add(destination)
+    }
+
     fun goBack() {
-        if (stack.isNotEmpty()) {
-            stack.removeLast()
-        }
+        if (stack.size <= 1) return
+        stack.removeLastOrNull()
     }
 
     fun switchTab(key: NavKey) {

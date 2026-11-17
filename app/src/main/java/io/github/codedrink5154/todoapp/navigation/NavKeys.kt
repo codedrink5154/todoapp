@@ -14,4 +14,7 @@ data object Focus : NavKey
 data object Auth : NavKey
 
 @Serializable
-data object User : NavKey
+data object UserPage : NavKey
+
+@Serializable
+data object UserModify : NavKey

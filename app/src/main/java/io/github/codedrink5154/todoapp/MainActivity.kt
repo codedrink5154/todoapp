@@ -21,13 +21,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Activity 完成初始化后再读取 Context 相关的登录状态。
-        val lastUser = getSharedPreferences("lastUser", MODE_PRIVATE)
-            .getString("lastUser", null)
-
         setContent {
             TodoAppTheme {
-                MainScreen(lastUser)
+                MainScreen()
             }
         }
     }

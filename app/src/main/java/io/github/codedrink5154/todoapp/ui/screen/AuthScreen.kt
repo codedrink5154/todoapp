@@ -21,6 +21,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.codedrink5154.todoapp.MainActivity
+import io.github.codedrink5154.todoapp.data.AppState
 import io.github.codedrink5154.todoapp.viewmodel.AuthViewModel
 import io.github.codedrink5154.todoapp.navigation.BackStack
 import io.github.codedrink5154.todoapp.navigation.TodoList
@@ -105,6 +106,8 @@ fun AuthScreen(innerPadding: PaddingValues, viewModel: AuthViewModel = viewModel
                                 if (viewModel.tryLogin(userName, password)) {
                                     // 清理密码
                                     viewModel.updatePassword("")
+                                    // 同步全局用户信息，让“我的”页面立即显示新用户名
+                                    AppState.user = AppState.user.copy(name = userName)
                                     // 切换至待办页面
                                     BackStack.switchTab(TodoList)
                                     // 自动登录，保存登录的用户名
