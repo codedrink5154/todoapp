@@ -41,21 +41,13 @@ fun UserScreen(innerPadding: PaddingValues) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         UserInfoCard()
-        OutlinedCard(
-            modifier = Modifier.fillMaxWidth().wrapContentSize().clickable { BackStack.push(UserModify) }
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp).padding(horizontal = 16.dp)
-            ) {
-                Text(
-                    text = "修改资料",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
-        }
-        OutlinedCard(
-            modifier = Modifier.fillMaxWidth().wrapContentSize().clickable {
+        ButtonField(
+            title = "修改资料",
+            onClick = { BackStack.push(UserModify) }
+        )
+        ButtonField(
+            title = "退出登录",
+            onClick = {
                 // 向lastUser.xml写入空值，取消自动登录
                 val sp = context.getSharedPreferences("lastUser", Context.MODE_PRIVATE)
                 with(sp.edit()) {
@@ -64,16 +56,26 @@ fun UserScreen(innerPadding: PaddingValues) {
                 }
                 BackStack.switchTab(Auth)
             }
+        )
+    }
+}
+
+@Composable
+fun ButtonField(
+    title: String,
+    onClick: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth().wrapContentSize().clickable { onClick() }
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp).padding(horizontal = 16.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp).padding(horizontal = 16.dp)
-            ) {
-                Text(
-                    text = "退出登录",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
         }
     }
 }
