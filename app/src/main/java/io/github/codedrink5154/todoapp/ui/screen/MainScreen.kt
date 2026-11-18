@@ -103,8 +103,8 @@ fun BackTopBar(text: String) {
         title = {
             Text(
                 text = text,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Medium,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.secondary,
             )
         },
         navigationIcon = {
