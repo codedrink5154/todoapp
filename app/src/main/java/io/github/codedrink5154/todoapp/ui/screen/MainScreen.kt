@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import io.github.codedrink5154.todoapp.data.AppState
 import io.github.codedrink5154.todoapp.data.User
 import io.github.codedrink5154.todoapp.navigation.Auth
 import io.github.codedrink5154.todoapp.navigation.BackStack
@@ -32,19 +31,20 @@ import io.github.codedrink5154.todoapp.navigation.Focus
 import io.github.codedrink5154.todoapp.navigation.TodoList
 import io.github.codedrink5154.todoapp.navigation.UserModify
 import io.github.codedrink5154.todoapp.navigation.UserPage
+import io.github.codedrink5154.todoapp.viewmodel.AppViewModel
 
 @ExperimentalMaterial3Api
 @Composable
-fun MainScreen() {
+fun MainScreen(appViewModel: AppViewModel) {
     val context = LocalContext.current
     val lastUser = remember {
         context.getSharedPreferences("lastUser", Context.MODE_PRIVATE)
             .getString("lastUser", null)
     }
 
-    // 首次进入时恢复当前用户，避免每次重组都覆盖 AppState
+    // 首次进入时恢复当前用户
     LaunchedEffect(lastUser) {
-        AppState.user = User(lastUser.orEmpty(), "")
+        appViewModel.login(name = lastUser ?: "未保存用户")
     }
 
     // lastUser 为 null 或空串时进入登录页
@@ -52,11 +52,11 @@ fun MainScreen() {
         if (lastUser.isNullOrBlank()) Auth else TodoList
     )
 
-    val current = BackStack.getCurrent()
+    val currentTab = BackStack.getCurrent()
 
     Scaffold(
         topBar = {
-            when (current) {
+            when (currentTab) {
                 UserModify -> BackTopBar("修改资料")
                 else ->
                     TopAppBar(
@@ -71,8 +71,8 @@ fun MainScreen() {
             }
         },
         bottomBar = {
-            if (current != null && current != Auth && BackStack.getLength() <= 1) {
-                BottomNavBar(current)
+            if (currentTab != null && currentTab != Auth && BackStack.getLength() <= 1) {
+                BottomNavBar(currentTab)
             }
         },
     ) { innerPadding ->
@@ -86,11 +86,21 @@ fun MainScreen() {
                 fadeIn(animationSpec = snap()) togetherWith fadeOut(animationSpec = snap())
             },
             entryProvider = entryProvider {
-                entry<Auth> { AuthScreen(innerPadding) }
+                entry<Auth> { AuthScreen(innerPadding, onLoginSuccess = { name -> appViewModel.login(name) }) }
                 entry<TodoList> { TodoListScreen(innerPadding) }
                 entry<Focus> { FocusScreen(innerPadding) }
-                entry<UserPage> { UserScreen(innerPadding) }
-                entry<UserModify> { UserModify(innerPadding) }
+                entry<UserPage> {
+                    UserScreen(
+                        innerPadding,
+                        onLogout = { appViewModel.logout() },
+                        getUserName = { appViewModel.getUserName() ?: "无" })
+                }
+                entry<UserModify> {
+                    UserModify(
+                        innerPadding,
+                        userName = appViewModel.getUserName() ?: "无",
+                        changeName = { appViewModel.updateName(it) })
+                }
             },
         )
     }

@@ -44,7 +44,7 @@ class AuthViewModel : ViewModel() {
     }
 
     // 登录,返回一个Boolean，表示登录是否成功
-    // TODO
+    // TODO: 需要在这里实现登录逻辑
     fun tryLogin(name: String, password: String): Boolean {
         return true
     }

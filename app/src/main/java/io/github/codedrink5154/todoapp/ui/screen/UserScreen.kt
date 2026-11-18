@@ -26,21 +26,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
-import io.github.codedrink5154.todoapp.data.AppState
 import io.github.codedrink5154.todoapp.navigation.BackStack
 import io.github.codedrink5154.todoapp.navigation.UserModify
 import io.github.codedrink5154.todoapp.navigation.Auth
 
 
 @Composable
-fun UserScreen(innerPadding: PaddingValues) {
+fun UserScreen(innerPadding: PaddingValues, onLogout: () -> Unit, getUserName: () -> String) {
     val context = LocalContext.current
     Column(
         modifier = Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        UserInfoCard()
+        UserInfoCard(getUserName())
         ButtonField(
             title = "修改资料",
             onClick = { BackStack.push(UserModify) }
@@ -48,6 +47,7 @@ fun UserScreen(innerPadding: PaddingValues) {
         ButtonField(
             title = "退出登录",
             onClick = {
+                onLogout()
                 // 向lastUser.xml写入空值，取消自动登录
                 val sp = context.getSharedPreferences("lastUser", Context.MODE_PRIVATE)
                 with(sp.edit()) {
@@ -81,7 +81,7 @@ fun ButtonField(
 }
 
 @Composable
-fun UserInfoCard() {
+fun UserInfoCard(userName: String) {
     OutlinedCard(
         modifier = Modifier.wrapContentSize().fillMaxWidth(),
     ) {
@@ -93,7 +93,7 @@ fun UserInfoCard() {
             Spacer(Modifier.height(8.dp))
             Icon(Icons.Default.AccountCircle, "头像", modifier = Modifier.size(64.dp))
             Text(
-                text = AppState.user.name,
+                text = userName,
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.primary,
             )

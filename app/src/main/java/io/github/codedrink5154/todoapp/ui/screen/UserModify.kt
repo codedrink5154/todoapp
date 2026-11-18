@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.codedrink5154.todoapp.data.AppState
 import io.github.codedrink5154.todoapp.navigation.BackStack
 import io.github.codedrink5154.todoapp.viewmodel.AuthViewModel
 import sun.awt.X11.Visual
@@ -37,7 +36,7 @@ enum class EditableField {
 }
 
 @Composable
-fun UserModify(innerPadding: PaddingValues) {
+fun UserModify(innerPadding: PaddingValues, userName: String, changeName: (String) -> Unit) {
 
     // 表示编辑器是否开启
     var editing by rememberSaveable { mutableStateOf<EditableField?>(null) }
@@ -46,10 +45,10 @@ fun UserModify(innerPadding: PaddingValues) {
         null -> Unit
         EditableField.NAME -> UserInfoEditDialog(
             title = "修改用户名",
-            initialValue = AppState.user.name,
+            initialValue = userName,
             onDismiss = { editing = null },
             onConfirm = { newName ->
-                AppState.user = AppState.user.copy(name = newName.trim())
+                changeName(newName)
                 editing = null
             },
         )
@@ -60,7 +59,6 @@ fun UserModify(innerPadding: PaddingValues) {
             maskInput = true,
             onDismiss = { editing = null },
             onConfirm = { newPassword ->
-                AppState.user = AppState.user.copy(password = newPassword)
                 editing = null
             },
         )
@@ -71,7 +69,7 @@ fun UserModify(innerPadding: PaddingValues) {
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item {
-            EditRow(title = "用户名", content = AppState.user.name, onClick = { editing = EditableField.NAME })
+            EditRow(title = "用户名", content = userName, onClick = { editing = EditableField.NAME })
         }
         item {
             EditRow(title = "密码", content = "********", onClick = { editing = EditableField.PASSWORD })
