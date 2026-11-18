@@ -1,6 +1,7 @@
 package io.github.codedrink5154.todoapp.ui.screen
 
 import android.widget.Space
+import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,13 +25,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import io.github.codedrink5154.todoapp.data.AppState
 import io.github.codedrink5154.todoapp.navigation.BackStack
 import io.github.codedrink5154.todoapp.navigation.UserModify
+import io.github.codedrink5154.todoapp.navigation.Auth
 
 
 @Composable
 fun UserScreen(innerPadding: PaddingValues) {
+    val context = LocalContext.current
     Column(
         modifier = Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -45,6 +49,27 @@ fun UserScreen(innerPadding: PaddingValues) {
             ) {
                 Text(
                     text = "修改资料",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
+        OutlinedCard(
+            modifier = Modifier.fillMaxWidth().wrapContentSize().clickable {
+                // 向lastUser.xml写入空值，取消自动登录
+                val sp = context.getSharedPreferences("lastUser", Context.MODE_PRIVATE)
+                with(sp.edit()) {
+                    putString("lastUser", "")
+                    apply()
+                }
+                BackStack.switchTab(Auth)
+            }
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp).padding(horizontal = 16.dp)
+            ) {
+                Text(
+                    text = "退出登录",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary,
                 )
