@@ -24,6 +24,7 @@ import io.github.codedrink5154.todoapp.MainActivity
 import io.github.codedrink5154.todoapp.viewmodel.AuthViewModel
 import io.github.codedrink5154.todoapp.navigation.BackStack
 import io.github.codedrink5154.todoapp.navigation.TodoList
+import io.github.codedrink5154.todoapp.data.PreferencesManager
 
 @Composable
 fun AuthScreen(innerPadding: PaddingValues, onLoginSuccess: (String) -> Unit, viewModel: AuthViewModel = viewModel()) {
@@ -109,13 +110,7 @@ fun AuthScreen(innerPadding: PaddingValues, onLoginSuccess: (String) -> Unit, vi
                                     onLoginSuccess(userName)
                                     // 切换至待办页面
                                     BackStack.switchTab(TodoList)
-                                    // 自动登录，保存登录的用户名
-                                    val sp = context.getSharedPreferences("lastUser", Context.MODE_PRIVATE)
-                                    with(sp.edit()) {
-                                        putString("lastUser", userName)
-                                        apply()
-                                    }
-
+                                    // 自动登录已经在AppViewModel中实现
                                     Toast.makeText(context, "登录成功!", Toast.LENGTH_SHORT).show()
                                 } else {
                                     Toast.makeText(context, "用户名或密码错误", Toast.LENGTH_SHORT).show()
