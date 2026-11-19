@@ -1,0 +1,122 @@
+package io.github.codedrink5154.todoapp.viewmodel
+
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ViewModel
+import io.github.codedrink5154.todoapp.data.TodoTask
+import io.github.codedrink5154.todoapp.data.User
+import io.github.codedrink5154.todoapp.navigation.TodoList
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
+class TodoViewModel : ViewModel() {
+    /* 编辑器是否开启 */
+    private val _isEditorOpen = MutableStateFlow(false)
+    val isEditorOpen: StateFlow<Boolean> = _isEditorOpen.asStateFlow()
+
+    /* 自增ID, 用于标识任务 */
+    private var nextId: Long = 1L
+
+    /* 定义任务列表 */
+    private val _todoList = mutableStateListOf<TodoTask>()
+    val todoList: List<TodoTask> = _todoList
+
+    /* 编辑任务时，任务的标题 */
+    private val _title = MutableStateFlow("")
+    val title: StateFlow<String> = _title.asStateFlow()
+
+    /* 编辑任务时，任务的描述 */
+    private val _description = MutableStateFlow("")
+    val description: StateFlow<String> = _description.asStateFlow()
+
+    /* 编辑任务时，任务的截止时间 */
+    private val _deadline = MutableStateFlow<Long?>(null)
+    val deadline: StateFlow<Long?> = _deadline.asStateFlow()
+
+    /* 编辑任务时，任务的分类 */
+    private val _category = MutableStateFlow<String?>(null)
+    val category: StateFlow<String?> = _category.asStateFlow()
+
+    /* 编辑任务时，任务的提醒时间 */
+    private val _remind = MutableStateFlow<Long?>(null)
+    val remind: StateFlow<Long?> = _remind.asStateFlow()
+
+    /* 创建一个新任务，将其加入到列表中 */
+    /* 该函数仅能被任务编辑器调用 */
+    fun addNewTask() {
+        val title = _title.value.trim()
+        if (title.isEmpty()) return
+
+        _todoList.add(
+            TodoTask(
+                id = nextId++,
+                title = title,
+                category = _category.value,
+                description = _description.value,
+                deadline = _deadline.value,
+                remind = _remind.value,
+                done = false,
+                createdAt = System.currentTimeMillis(),
+            )
+        )
+
+        closeEditor()
+    }
+
+    /* 调整某个任务的完成/未完成状态 */
+    fun toggleDone(id: Long) {
+        val index = _todoList.indexOfFirst { it.id == id }
+        if (index < 0) return
+
+        val task = _todoList[index]
+        _todoList[index] = task.copy(done = !task.done)
+    }
+
+    /* 重置编辑器的临时状态 */
+    private fun clearForm() {
+        _title.value = ""
+        _description.value = ""
+        _deadline.value = null
+        _category.value = null
+        _remind.value = null
+    }
+
+    fun openEditor() {
+        clearForm()
+        _isEditorOpen.value = true
+    }
+
+    fun closeEditor() {
+        clearForm()
+        _isEditorOpen.value = false
+    }
+
+    /* 移除某个任务 */
+    fun removeTask(
+        id: Long
+    ) {
+        _todoList.removeAll { it.id == id }
+    }
+
+    /* 更新编辑器状态 */
+    fun updateTitle(value: String) {
+        _title.value = value
+    }
+
+    fun updateDescription(value: String) {
+        _description.value = value
+    }
+
+    fun updateDeadline(value: Long?) {
+        _deadline.value = value
+    }
+
+    fun updateCategory(value: String?) {
+        _category.value = value
+    }
+
+    fun updateRemind(value: Long?) {
+        _remind.value = value
+    }
+}
