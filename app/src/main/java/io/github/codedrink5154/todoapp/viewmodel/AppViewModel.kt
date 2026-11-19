@@ -1,5 +1,6 @@
 package io.github.codedrink5154.todoapp.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import io.github.codedrink5154.todoapp.data.User
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,6 +12,11 @@ class AppViewModel : ViewModel() {
     private val _currentUser = MutableStateFlow<User?>(null)
 
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
+
+    fun restoreSession(savedName: String?) {
+        if (_currentUser.value != null || savedName.isNullOrBlank()) return
+        _currentUser.value = User(savedName, "")
+    }
 
     fun login(name: String) {
         _currentUser.value = User(name, "")

@@ -50,10 +50,7 @@ fun UserScreen(innerPadding: PaddingValues, onLogout: () -> Unit, userName: Stri
                 onLogout()
                 // 向lastUser.xml写入空值，取消自动登录
                 val sp = context.getSharedPreferences("lastUser", Context.MODE_PRIVATE)
-                with(sp.edit()) {
-                    putString("lastUser", "")
-                    apply()
-                }
+                sp.edit().remove("lastUser").apply()
                 BackStack.switchTab(Auth)
             }
         )

@@ -40,19 +40,19 @@ import io.github.codedrink5154.todoapp.viewmodel.AppViewModel
 @Composable
 fun MainScreen(appViewModel: AppViewModel) {
     val context = LocalContext.current
-    val lastUser = remember {
+    val lastUserName = remember {
         context.getSharedPreferences("lastUser", Context.MODE_PRIVATE)
             .getString("lastUser", null)
     }
 
     // 首次进入时恢复当前用户
-    LaunchedEffect(lastUser) {
-        appViewModel.login(name = lastUser ?: "未保存用户")
+    LaunchedEffect(Unit) {
+        appViewModel.restoreSession(lastUserName)
     }
 
     // lastUser 为 null 或空串时进入登录页
     BackStack.stack = rememberNavBackStack(
-        if (lastUser.isNullOrBlank()) Auth else TodoList
+        if (lastUserName.isNullOrBlank()) Auth else TodoList
     )
 
     val currentTab = BackStack.getCurrent()

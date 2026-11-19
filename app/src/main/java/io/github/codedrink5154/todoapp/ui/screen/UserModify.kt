@@ -29,7 +29,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.codedrink5154.todoapp.navigation.BackStack
 import io.github.codedrink5154.todoapp.viewmodel.AuthViewModel
-import sun.awt.X11.Visual
 
 enum class EditableField {
     NAME, PASSWORD
@@ -48,7 +47,7 @@ fun UserModify(innerPadding: PaddingValues, userName: String, changeName: (Strin
             initialValue = userName,
             onDismiss = { editing = null },
             onConfirm = { newName ->
-                changeName(newName)
+                changeName(newName.trim())
                 editing = null
             },
         )

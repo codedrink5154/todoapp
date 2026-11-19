@@ -12,9 +12,9 @@ import kotlinx.coroutines.flow.update
 class AuthViewModel : ViewModel() {
     private val _isRegister = MutableStateFlow(false)
 
-    private var _name = MutableStateFlow("")
-    private var _password = MutableStateFlow("")
-    private var _repeatPassword = MutableStateFlow("")
+    private val _name = MutableStateFlow("")
+    private val _password = MutableStateFlow("")
+    private val _repeatPassword = MutableStateFlow("")
 
     val isRegister: StateFlow<Boolean> = _isRegister.asStateFlow()
 
