@@ -25,6 +25,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.ui.NavDisplay
 import io.github.codedrink5154.todoapp.data.User
 import io.github.codedrink5154.todoapp.navigation.Auth
@@ -35,6 +36,7 @@ import io.github.codedrink5154.todoapp.navigation.TodoList
 import io.github.codedrink5154.todoapp.navigation.UserModify
 import io.github.codedrink5154.todoapp.navigation.UserPage
 import io.github.codedrink5154.todoapp.viewmodel.AppViewModel
+import io.github.codedrink5154.todoapp.viewmodel.TodoViewModel
 
 @ExperimentalMaterial3Api
 @Composable
@@ -80,7 +82,10 @@ fun MainScreen(appViewModel: AppViewModel) {
             },
             entryProvider = entryProvider {
                 entry<Auth> { AuthScreen(innerPadding, onLoginSuccess = { name -> appViewModel.login(name) }) }
-                entry<TodoList> { TodoListScreen(innerPadding) }
+                entry<TodoList> {
+                    val todoViewModel: TodoViewModel = viewModel()
+                    TodoListScreen(innerPadding, todoViewModel)
+                }
                 entry<Focus> { FocusScreen(innerPadding) }
                 entry<UserPage> {
                     val user by appViewModel.currentUser.collectAsStateWithLifecycle()
