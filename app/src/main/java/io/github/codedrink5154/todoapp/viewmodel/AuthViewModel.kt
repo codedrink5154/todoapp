@@ -40,7 +40,7 @@ class AuthViewModel : ViewModel() {
 
     // 注册新的用户
     fun registerNewAccount(name: String, passwd: String): Boolean {
-        TODO("需要更加完善的注册机制, 而不是使用sharedPreferences")
+        return false
     }
 
     // 登录,返回一个Boolean，表示登录是否成功
