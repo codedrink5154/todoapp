@@ -20,8 +20,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.navigation3.ui.NavDisplay
 import io.github.codedrink5154.todoapp.data.User
 import io.github.codedrink5154.todoapp.navigation.Auth
@@ -90,15 +93,18 @@ fun MainScreen(appViewModel: AppViewModel) {
                 entry<TodoList> { TodoListScreen(innerPadding) }
                 entry<Focus> { FocusScreen(innerPadding) }
                 entry<UserPage> {
+                    val user by appViewModel.currentUser.collectAsStateWithLifecycle()
                     UserScreen(
                         innerPadding,
                         onLogout = { appViewModel.logout() },
-                        getUserName = { appViewModel.getUserName() ?: "无" })
+                        userName = user?.name ?: "无"
+                    )
                 }
                 entry<UserModify> {
+                    val user by appViewModel.currentUser.collectAsStateWithLifecycle()
                     UserModify(
                         innerPadding,
-                        userName = appViewModel.getUserName() ?: "无",
+                        userName = user?.name ?: "无",
                         changeName = { appViewModel.updateName(it) })
                 }
             },

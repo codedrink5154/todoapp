@@ -12,10 +12,6 @@ class AppViewModel : ViewModel() {
 
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
-    fun getUserName(): String? {
-        return _currentUser.value?.name
-    }
-
     fun login(name: String) {
         _currentUser.value = User(name, "")
     }

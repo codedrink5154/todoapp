@@ -32,14 +32,14 @@ import io.github.codedrink5154.todoapp.navigation.Auth
 
 
 @Composable
-fun UserScreen(innerPadding: PaddingValues, onLogout: () -> Unit, getUserName: () -> String) {
+fun UserScreen(innerPadding: PaddingValues, onLogout: () -> Unit, userName: String) {
     val context = LocalContext.current
     Column(
         modifier = Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        UserInfoCard(getUserName())
+        UserInfoCard(userName)
         ButtonField(
             title = "修改资料",
             onClick = { BackStack.push(UserModify) }
