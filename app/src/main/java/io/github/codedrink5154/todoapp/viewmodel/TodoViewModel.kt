@@ -12,8 +12,16 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class TodoViewModel : ViewModel() {
     /* 编辑器是否开启 */
-    private val _isEditorOpen = MutableStateFlow(false)
-    val isEditorOpen: StateFlow<Boolean> = _isEditorOpen.asStateFlow()
+    private val _isAdding = MutableStateFlow(false)
+    val isEditorOpen: StateFlow<Boolean> = _isAdding.asStateFlow()
+
+    /* 正在编辑的任务ID */
+    private val _id = MutableStateFlow<Long?>(null)
+    val id: StateFlow<Long?> = _id.asStateFlow()
+
+    /* 详细编辑 */
+    private val _isEditing = MutableStateFlow(false)
+    val isEditing: StateFlow<Boolean> = _isEditing.asStateFlow()
 
     /* 自增ID, 用于标识任务 */
     private var nextId: Long = 1L
@@ -61,7 +69,7 @@ class TodoViewModel : ViewModel() {
             )
         )
 
-        closeEditor()
+        addTaskDone()
     }
 
     /* 调整某个任务的完成/未完成状态 */
@@ -82,14 +90,46 @@ class TodoViewModel : ViewModel() {
         _remind.value = null
     }
 
-    fun openEditor() {
+    /* 添加任务 */
+    fun addTask() {
         clearForm()
-        _isEditorOpen.value = true
+        _isAdding.value = true
+    }
+
+    fun addTaskDone() {
+        clearForm()
+        _isAdding.value = false
+    }
+
+    fun editTask(id: Long) {
+        _id.value = id // 更新id
+        clearForm()
+        val index = _todoList.indexOfFirst { it.id == id } // 取得制定任务的index
+        _title.value = _todoList[index].title
+        _description.value = _todoList[index].description
+        _category.value = _todoList[index].category
+        _deadline.value = _todoList[index].deadline
+        _remind.value = _todoList[index].remind
+        openEditor()
+    }
+
+    fun syncToList() {
+        val index = _todoList.indexOfFirst { it.id == _id.value }
+        _todoList[index] = _todoList[index].copy(
+            title = _title.value,
+            description = _description.value,
+        )
+    }
+
+    /* 编辑任务 */
+    fun openEditor() {
+        _isEditing.value = true
     }
 
     fun closeEditor() {
+        syncToList()
         clearForm()
-        _isEditorOpen.value = false
+        _isEditing.value = false
     }
 
     /* 移除某个任务 */
