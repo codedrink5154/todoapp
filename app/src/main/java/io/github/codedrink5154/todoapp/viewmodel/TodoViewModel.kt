@@ -115,10 +115,13 @@ class TodoViewModel : ViewModel() {
 
     fun syncToList() {
         val index = _todoList.indexOfFirst { it.id == _id.value }
+        if (index < 0) return
         _todoList[index] = _todoList[index].copy(
             title = _title.value,
             description = _description.value,
             category = _category.value,
+            deadline = _deadline.value,
+            remind = _remind.value,
         )
     }
 
@@ -155,6 +158,11 @@ class TodoViewModel : ViewModel() {
 
     fun updateCategory(value: String?) {
         _category.value = value
+    }
+
+    fun updateDeadline(value: Long) {
+        _deadline.value = value
+        _remind.value = null
     }
 
     fun updateRemind(value: Long?) {

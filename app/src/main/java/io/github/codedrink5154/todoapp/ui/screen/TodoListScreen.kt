@@ -21,7 +21,9 @@ import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
@@ -41,7 +43,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TimeInput
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -61,6 +65,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sun.org.apache.xml.internal.utils.StringComparable
 import io.github.codedrink5154.todoapp.data.TodoTask
 import io.github.codedrink5154.todoapp.viewmodel.TodoViewModel
+import java.util.Calendar
 
 @Composable
 fun TodoListScreen(
@@ -149,6 +154,8 @@ fun TodoListScreen(
             onDescriptionChange = todoViewModel::updateDescription,
             category = draftCategory,
             onCategoryChange = todoViewModel::updateCategory,
+            deadline = draftDeadline,
+            onDeadlineChange = todoViewModel::updateDeadline,
             onDismiss = todoViewModel::closeEditor,
         )
     }
@@ -333,10 +340,11 @@ fun EditTaskSheet(
     onDescriptionChange: (String) -> Unit,
     category: String?,
     onCategoryChange: (String) -> Unit,
+    deadline: Long,
+    onDeadlineChange: (Long?) -> Unit,
     onDismiss: () -> Unit,
 ) {
     var sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val focusRequester = remember { FocusRequester() }
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -344,13 +352,27 @@ fun EditTaskSheet(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
     ) {
-        EditRowText("标题", title, true, onTitleChange)
-        EditRowText("描述", description, false, onDescriptionChange)
-        EditRowText("分类", category ?: "", true, onCategoryChange)
-    }
-
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
+        Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(
+                    WindowInsets.systemBars
+                        .only(WindowInsetsSides.Bottom)
+                        .union(WindowInsets.ime)
+                )
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 12.dp,
+                    bottom = 2.dp,
+                )
+                .verticalScroll(rememberScrollState()),
+        ) {
+            EditRowText("标题", title, true, onTitleChange)
+            EditRowText("描述", description, false, onDescriptionChange)
+            EditRowText("分类", category ?: "", true, onCategoryChange)
+        }
     }
 }
 
@@ -361,22 +383,7 @@ fun EditRowText(
     singleLine: Boolean,
     onChange: (String) -> Unit,
 ) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .windowInsetsPadding(
-                WindowInsets.systemBars
-                    .only(WindowInsetsSides.Bottom)
-                    .union(WindowInsets.ime)
-            )
-            .padding(
-                start = 16.dp,
-                end = 16.dp,
-                top = 12.dp,
-                bottom = 2.dp,
-            ),
-    ) {
+    Column {
         Text(
             text = label,
             style = MaterialTheme.typography.bodySmall,
@@ -396,6 +403,24 @@ fun EditRowText(
                 focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             ),
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditRowTime() {
+    val currentTime = Calendar.getInstance()
+
+    val timePickerState = rememberTimePickerState(
+        initialHour = currentTime.get(Calendar.HOUR_OF_DAY),
+        initialMinute = currentTime.get(Calendar.MINUTE),
+        is24Hour = true,
+    )
+
+    Column {
+        TimeInput(
+            state = timePickerState,
         )
     }
 }
