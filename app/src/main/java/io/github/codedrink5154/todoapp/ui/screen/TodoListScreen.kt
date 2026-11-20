@@ -58,6 +58,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sun.org.apache.xml.internal.utils.StringComparable
 import io.github.codedrink5154.todoapp.data.TodoTask
 import io.github.codedrink5154.todoapp.viewmodel.TodoViewModel
 
@@ -146,6 +147,8 @@ fun TodoListScreen(
             onTitleChange = todoViewModel::updateTitle,
             description = draftDescript,
             onDescriptionChange = todoViewModel::updateDescription,
+            category = draftCategory,
+            onCategoryChange = todoViewModel::updateCategory,
             onDismiss = todoViewModel::closeEditor,
         )
     }
@@ -328,12 +331,8 @@ fun EditTaskSheet(
     onTitleChange: (String) -> Unit,
     description: String,
     onDescriptionChange: (String) -> Unit,
-    // category: String?,
-    // onCategoryChange: (String) -> Unit,
-    // deadline: Long?,
-    // onDeadlineChange: (Long) -> Unit,
-    // remind: Long?,
-    // onremindChange: (Long) -> Unit,
+    category: String?,
+    onCategoryChange: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
     var sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -345,68 +344,58 @@ fun EditTaskSheet(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
     ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .windowInsetsPadding(
-                    WindowInsets.systemBars
-                        .only(WindowInsetsSides.Bottom)
-                        .union(WindowInsets.ime)
-                )
-                .padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 12.dp,
-                    bottom = 8.dp,
-                ),
-        ) {
-            Text(
-                text = "任务标题",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-            TextField(
-                value = title,
-                onValueChange = { title -> onTitleChange(title) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .focusRequester(focusRequester),
-                singleLine = true,
-                shape = RoundedCornerShape(20.dp),
-                // 定制化颜色
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                ),
-            )
-            Text(
-                text = "任务描述",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-            TextField(
-                value = description,
-                onValueChange = { desc -> onDescriptionChange(desc) },
-                modifier = Modifier
-                    .fillMaxWidth(),
-                singleLine = false,
-                shape = RoundedCornerShape(20.dp),
-                // 定制化颜色
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                ),
-            )
-        }
-
+        EditRowText("标题", title, true, onTitleChange)
+        EditRowText("描述", description, false, onDescriptionChange)
+        EditRowText("分类", category ?: "", true, onCategoryChange)
     }
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
+    }
+}
+
+@Composable
+fun EditRowText(
+    label: String,
+    value: String,
+    singleLine: Boolean,
+    onChange: (String) -> Unit,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .windowInsetsPadding(
+                WindowInsets.systemBars
+                    .only(WindowInsetsSides.Bottom)
+                    .union(WindowInsets.ime)
+            )
+            .padding(
+                start = 16.dp,
+                end = 16.dp,
+                top = 12.dp,
+                bottom = 2.dp,
+            ),
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        TextField(
+            value = value,
+            onValueChange = { value -> onChange(value) },
+            modifier = Modifier
+                .fillMaxWidth(),
+            singleLine = singleLine,
+            shape = RoundedCornerShape(20.dp),
+            // 定制化颜色
+            colors = TextFieldDefaults.colors(
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            ),
+        )
     }
 }

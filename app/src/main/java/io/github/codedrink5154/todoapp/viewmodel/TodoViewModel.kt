@@ -118,6 +118,7 @@ class TodoViewModel : ViewModel() {
         _todoList[index] = _todoList[index].copy(
             title = _title.value,
             description = _description.value,
+            category = _category.value,
         )
     }
 
