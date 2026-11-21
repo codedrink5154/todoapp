@@ -340,7 +340,7 @@ fun EditTaskSheet(
     onDescriptionChange: (String) -> Unit,
     category: String?,
     onCategoryChange: (String) -> Unit,
-    deadline: Long,
+    deadline: Long?,
     onDeadlineChange: (Long?) -> Unit,
     onDismiss: () -> Unit,
 ) {
