@@ -22,5 +22,5 @@ fun instantToDateTime(value: Instant?): ZonedDateTime? {
 /* ZonedDateTime? -> String */
 fun zonedDateTimeToString(value: ZonedDateTime?): String {
     if (value == null) return "无时间"
-    return value.format(DateTimeFormatter.ofPattern("yyyy年MM月 HH:mm"))
+    return value.format(DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH:mm"))
 }
