@@ -98,6 +98,7 @@ class TodoViewModel : ViewModel() {
 
     /* 重置编辑器的临时状态 */
     private fun clearForm() {
+        _page.value = Page.OVERVIEW
         _title.value = ""
         _description.value = ""
         _deadline.value = null

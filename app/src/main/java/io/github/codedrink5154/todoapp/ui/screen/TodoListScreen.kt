@@ -106,12 +106,8 @@ fun TodoListScreen(
     /* 是否正在编辑任务 */
     val isEditing by todoViewModel.isEditing.collectAsStateWithLifecycle()
 
-    /* 编辑器的临时状态 */
+    /* 添加任务时只需要标题 */
     val draftTitle by todoViewModel.title.collectAsStateWithLifecycle()
-    val draftDescript by todoViewModel.description.collectAsStateWithLifecycle()
-    val draftDeadline by todoViewModel.deadline.collectAsStateWithLifecycle()
-    val draftCategory by todoViewModel.category.collectAsStateWithLifecycle()
-    val draftRemind by todoViewModel.remind.collectAsStateWithLifecycle()
 
 
     Box(
@@ -356,7 +352,8 @@ fun EditTaskSheet(
     viewModel: TodoViewModel,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val sheetContentModifier = Modifier
+    val page by viewModel.page.collectAsStateWithLifecycle()
+    val deadline by viewModel.deadline.collectAsStateWithLifecycle()
 
     ModalBottomSheet(
         onDismissRequest = viewModel::closeEditor,
@@ -365,15 +362,17 @@ fun EditTaskSheet(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
     ) {
-        when (viewModel.page.value) {
+        when (page) {
             Page.OVERVIEW -> ShowTaskOverview(viewModel)
             Page.DATE -> ShowDatePicker(
-                value = viewModel.deadline.value,
-                onValueChange = { viewModel.updateDeadline(it) })
+                value = deadline,
+                onValueChange = viewModel::updateDeadline,
+            )
 
             Page.TIME -> ShowTimePicker(
-                value = viewModel.deadline.value,
-                onValueChange = { viewModel.updateDeadline(it) })
+                value = deadline,
+                onValueChange = viewModel::updateDeadline,
+            )
         }
     }
 }
@@ -411,6 +410,7 @@ fun EditTextRow(
 
 @Composable
 fun EditTimeRow(label: String, value: Any?, onEdit: () -> Unit) {
+    /* 显示的时间 */
     val time: String = when (value) {
         null -> "无时间"
         is Int -> value.toString()
@@ -453,6 +453,12 @@ fun EditTimeRow(label: String, value: Any?, onEdit: () -> Unit) {
 
 @Composable
 fun ShowTaskOverview(viewModel: TodoViewModel) {
+    val title by viewModel.title.collectAsStateWithLifecycle()
+    val description by viewModel.description.collectAsStateWithLifecycle()
+    val category by viewModel.category.collectAsStateWithLifecycle()
+    val deadline by viewModel.deadline.collectAsStateWithLifecycle()
+    val remind by viewModel.remind.collectAsStateWithLifecycle()
+
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier
@@ -469,17 +475,33 @@ fun ShowTaskOverview(viewModel: TodoViewModel) {
                 bottom = 12.dp,
             )
     ) {
-        EditTextRow("标题", viewModel.title.value, true, viewModel::updateTitle)
-        EditTextRow("描述", viewModel.description.value, false, viewModel::updateDescription)
-        EditTextRow("分类", viewModel.category.value ?: "", true, viewModel::updateCategory)
-        EditTimeRow("截止时间", viewModel.deadline.value) { viewModel.switchPage(Page.DATE) }
-        EditTimeRow("提醒时间", viewModel.remind.value) { }
+        EditTextRow("标题", title, true, viewModel::updateTitle)
+        EditTextRow("描述", description, false, viewModel::updateDescription)
+        EditTextRow("分类", category ?: "", true, viewModel::updateCategory)
+        EditTimeRow("截止时间", deadline) { viewModel.switchPage(Page.DATE) }
+        EditTimeRow("提醒时间", remind) { /* TODO: 打开提醒时间编辑器 */ }
     }
 }
 
 @Composable
 fun ShowDatePicker(value: Long?, onValueChange: (Long?) -> Unit) {
-    Text("测试😮")
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .windowInsetsPadding(
+                WindowInsets.systemBars
+                    .only(WindowInsetsSides.Bottom)
+                    .union(WindowInsets.ime)
+            )
+            .padding(
+                start = 16.dp,
+                end = 16.dp,
+                top = 12.dp,
+                bottom = 12.dp,
+            )
+    ) {
+        Text("测试😮")
+    }
 }
 
 @Composable
