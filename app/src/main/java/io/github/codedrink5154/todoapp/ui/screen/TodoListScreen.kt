@@ -1,5 +1,6 @@
 package io.github.codedrink5154.todoapp.ui.screen
 
+import android.graphics.Paint
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -508,22 +509,38 @@ fun ShowDatePicker(onValueChange: (Long?) -> Unit, viewModel: TodoViewModel = vi
             )
     ) {
         Row(
-            horizontalArrangement = Arrangement.End,
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Button(
+            Text(
+                text = "选择日期",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary,
+            )
+
+            TextButton(
                 onClick = {
                     onValueChange(datePickerState.selectedDateMillis)
+                    viewModel.switchPage(Page.OVERVIEW)
                 }
             ) {
-                Text("确定")
+                Text(
+                    text = "返回",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.secondary,
+                )
             }
         }
         DatePicker(
             state = datePickerState
         )
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(10.dp))
         Row(
-            modifier = Modifier.padding(4.dp).fillMaxWidth().clickable { viewModel.switchPage(Page.TIME) },
+            modifier = Modifier.padding(4.dp).fillMaxWidth().clickable {
+                onValueChange(datePickerState.selectedDateMillis)
+                viewModel.switchPage(Page.TIME)
+            },
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -534,6 +551,7 @@ fun ShowDatePicker(onValueChange: (Long?) -> Unit, viewModel: TodoViewModel = vi
             }
             Icon(Icons.Default.Edit, "编辑具体时间")
         }
+        Spacer(Modifier.height(20.dp))
     }
 }
 
