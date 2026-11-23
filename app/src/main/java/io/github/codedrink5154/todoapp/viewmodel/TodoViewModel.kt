@@ -10,6 +10,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+enum class Page {
+    OVERVIEW,
+    DATE,
+    TIME,
+}
+
 class TodoViewModel : ViewModel() {
     /* 编辑器是否开启 */
     private val _isAdding = MutableStateFlow(false)
@@ -22,6 +28,15 @@ class TodoViewModel : ViewModel() {
     /* 详细编辑 */
     private val _isEditing = MutableStateFlow(false)
     val isEditing: StateFlow<Boolean> = _isEditing.asStateFlow()
+
+    /* 详细编辑时，正在进行的页面 */
+    private val _page = MutableStateFlow(Page.OVERVIEW)
+    val page: StateFlow<Page> = _page.asStateFlow()
+
+    /* 切换页面 */
+    fun switchPage(value: Page) {
+        _page.value = value
+    }
 
     /* 自增ID, 用于标识任务 */
     private var nextId: Long = 1L
@@ -47,8 +62,8 @@ class TodoViewModel : ViewModel() {
     val category: StateFlow<String?> = _category.asStateFlow()
 
     /* 编辑任务时，任务的提醒时间 */
-    private val _remind = MutableStateFlow<Long?>(null)
-    val remind: StateFlow<Long?> = _remind.asStateFlow()
+    private val _remind = MutableStateFlow<Int?>(null)
+    val remind: StateFlow<Int?> = _remind.asStateFlow()
 
     /* 创建一个新任务，将其加入到列表中 */
     /* 该函数仅能被任务编辑器调用 */
@@ -153,6 +168,8 @@ class TodoViewModel : ViewModel() {
     }
 
     fun updateDeadline(value: Long?) {
+        _remind.value = null
+        if (value == null) return
         _deadline.value = value
     }
 
@@ -160,12 +177,7 @@ class TodoViewModel : ViewModel() {
         _category.value = value
     }
 
-    fun updateDeadline(value: Long) {
-        _deadline.value = value
-        _remind.value = null
-    }
-
-    fun updateRemind(value: Long?) {
+    fun updateRemind(value: Int?) {
         _remind.value = value
     }
 }

@@ -1,5 +1,6 @@
 package io.github.codedrink5154.todoapp.ui.screen
 
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,13 +13,16 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -27,11 +31,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.RadioButtonChecked
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,7 +51,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimeInput
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -52,6 +63,12 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -64,8 +81,18 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sun.org.apache.xml.internal.utils.StringComparable
 import io.github.codedrink5154.todoapp.data.TodoTask
+import io.github.codedrink5154.todoapp.utils.instantToDateTime
+import io.github.codedrink5154.todoapp.utils.longToInstant
+import io.github.codedrink5154.todoapp.utils.zonedDateTimeToString
+import io.github.codedrink5154.todoapp.viewmodel.Page
 import io.github.codedrink5154.todoapp.viewmodel.TodoViewModel
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.drop
 
 @Composable
 fun TodoListScreen(
@@ -147,17 +174,7 @@ fun TodoListScreen(
     }
 
     if (isEditing) {
-        EditTaskSheet(
-            title = draftTitle,
-            onTitleChange = todoViewModel::updateTitle,
-            description = draftDescript,
-            onDescriptionChange = todoViewModel::updateDescription,
-            category = draftCategory,
-            onCategoryChange = todoViewModel::updateCategory,
-            deadline = draftDeadline,
-            onDeadlineChange = todoViewModel::updateDeadline,
-            onDismiss = todoViewModel::closeEditor,
-        )
+        EditTaskSheet(todoViewModel)
     }
 
     if (isEditorOpen) {
@@ -297,6 +314,7 @@ private fun AddTodoSheet(
                     .focusRequester(focusRequester),
                 placeholder = { Text("你想做什么？") },
                 // 类似的，也有leadingIcon
+                // leadingIcon = {}
                 trailingIcon = {
                     IconButton(
                         onClick = onSend,
@@ -331,53 +349,37 @@ private fun AddTodoSheet(
     }
 }
 
+/* 底部面板 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditTaskSheet(
-    title: String,
-    onTitleChange: (String) -> Unit,
-    description: String,
-    onDescriptionChange: (String) -> Unit,
-    category: String?,
-    onCategoryChange: (String) -> Unit,
-    deadline: Long?,
-    onDeadlineChange: (Long?) -> Unit,
-    onDismiss: () -> Unit,
+    viewModel: TodoViewModel,
 ) {
-    var sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetContentModifier = Modifier
+
     ModalBottomSheet(
-        onDismissRequest = onDismiss,
+        onDismissRequest = viewModel::closeEditor,
         sheetState = sheetState,
         dragHandle = null,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
     ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .windowInsetsPadding(
-                    WindowInsets.systemBars
-                        .only(WindowInsetsSides.Bottom)
-                        .union(WindowInsets.ime)
-                )
-                .padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 12.dp,
-                    bottom = 2.dp,
-                )
-                .verticalScroll(rememberScrollState()),
-        ) {
-            EditRowText("标题", title, true, onTitleChange)
-            EditRowText("描述", description, false, onDescriptionChange)
-            EditRowText("分类", category ?: "", true, onCategoryChange)
+        when (viewModel.page.value) {
+            Page.OVERVIEW -> ShowTaskOverview(viewModel)
+            Page.DATE -> ShowDatePicker(
+                value = viewModel.deadline.value,
+                onValueChange = { viewModel.updateDeadline(it) })
+
+            Page.TIME -> ShowTimePicker(
+                value = viewModel.deadline.value,
+                onValueChange = { viewModel.updateDeadline(it) })
         }
     }
 }
 
 @Composable
-fun EditRowText(
+fun EditTextRow(
     label: String,
     value: String,
     singleLine: Boolean,
@@ -407,20 +409,80 @@ fun EditRowText(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditRowTime() {
-    val currentTime = Calendar.getInstance()
-
-    val timePickerState = rememberTimePickerState(
-        initialHour = currentTime.get(Calendar.HOUR_OF_DAY),
-        initialMinute = currentTime.get(Calendar.MINUTE),
-        is24Hour = true,
-    )
+fun EditTimeRow(label: String, value: Any?, onEdit: () -> Unit) {
+    val time: String = when (value) {
+        null -> "无时间"
+        is Int -> value.toString()
+        is Long -> zonedDateTimeToString(instantToDateTime(longToInstant(value)))
+        else -> "似乎出现错误啦~"
+    }
 
     Column {
-        TimeInput(
-            state = timePickerState,
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onBackground,
         )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = time,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.secondary,
+            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                FilledIconButton(
+                    onClick = onEdit,
+                    modifier = Modifier.width(40.dp),
+                ) {
+                    Icon(
+                        Icons.Default.Edit,
+                        ""
+                    )
+                }
+            }
+        }
     }
+}
+
+@Composable
+fun ShowTaskOverview(viewModel: TodoViewModel) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .windowInsetsPadding(
+                WindowInsets.systemBars
+                    .only(WindowInsetsSides.Bottom)
+                    .union(WindowInsets.ime)
+            )
+            .padding(
+                start = 16.dp,
+                end = 16.dp,
+                top = 12.dp,
+                bottom = 12.dp,
+            )
+    ) {
+        EditTextRow("标题", viewModel.title.value, true, viewModel::updateTitle)
+        EditTextRow("描述", viewModel.description.value, false, viewModel::updateDescription)
+        EditTextRow("分类", viewModel.category.value ?: "", true, viewModel::updateCategory)
+        EditTimeRow("截止时间", viewModel.deadline.value) { viewModel.switchPage(Page.DATE) }
+        EditTimeRow("提醒时间", viewModel.remind.value) { }
+    }
+}
+
+@Composable
+fun ShowDatePicker(value: Long?, onValueChange: (Long?) -> Unit) {
+    Text("测试😮")
+}
+
+@Composable
+fun ShowTimePicker(value: Long?, onValueChange: (Long?) -> Unit) {
+
 }

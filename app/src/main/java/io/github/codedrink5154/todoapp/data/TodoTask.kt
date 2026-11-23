@@ -9,7 +9,7 @@ data class TodoTask(
     val category: String?,
     val description: String = "",
     val deadline: Long?,
-    val remind: Long?,
+    val remind: Int?, // 在remind分钟前提醒
     val done: Boolean = false,
     val createdAt: Long,
 )
