@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.RadioButtonChecked
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
+import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,6 +48,8 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -60,7 +63,6 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -79,11 +81,12 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sun.org.apache.xml.internal.utils.StringComparable
 import io.github.codedrink5154.todoapp.data.TodoTask
 import io.github.codedrink5154.todoapp.utils.instantToDateTime
 import io.github.codedrink5154.todoapp.utils.longToInstant
-import io.github.codedrink5154.todoapp.utils.zonedDateTimeToString
+import io.github.codedrink5154.todoapp.utils.toStringZHCN
 import io.github.codedrink5154.todoapp.viewmodel.Page
 import io.github.codedrink5154.todoapp.viewmodel.TodoViewModel
 import java.time.Instant
@@ -365,14 +368,10 @@ fun EditTaskSheet(
         when (page) {
             Page.OVERVIEW -> ShowTaskOverview(viewModel)
             Page.DATE -> ShowDatePicker(
-                value = deadline,
                 onValueChange = viewModel::updateDeadline,
             )
 
-            Page.TIME -> ShowTimePicker(
-                value = deadline,
-                onValueChange = viewModel::updateDeadline,
-            )
+            Page.TIME -> ShowTimePicker(viewModel::updateDeadline)
         }
     }
 }
@@ -414,7 +413,7 @@ fun EditTimeRow(label: String, value: Any?, onEdit: () -> Unit) {
     val time: String = when (value) {
         null -> "无时间"
         is Int -> value.toString()
-        is Long -> zonedDateTimeToString(instantToDateTime(longToInstant(value)))
+        is Long -> (instantToDateTime(longToInstant(value))).toStringZHCN()
         else -> "似乎出现错误啦~"
     }
 
@@ -483,9 +482,17 @@ fun ShowTaskOverview(viewModel: TodoViewModel) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShowDatePicker(value: Long?, onValueChange: (Long?) -> Unit) {
-    Box(
+fun ShowDatePicker(onValueChange: (Long?) -> Unit, viewModel: TodoViewModel = viewModel()) {
+    var dateTime = viewModel.deadline.collectAsStateWithLifecycle().value
+    var instant = if (dateTime != null) Instant.ofEpochMilli(dateTime) else Instant.now()
+    var datePickerState = rememberDatePickerState(
+        initialSelectedDate = instant.atZone(ZoneId.systemDefault()).toLocalDate()
+    )
+    val timeStr: String = instant.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("HH:mm"))
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .windowInsetsPadding(
@@ -500,11 +507,53 @@ fun ShowDatePicker(value: Long?, onValueChange: (Long?) -> Unit) {
                 bottom = 12.dp,
             )
     ) {
-        Text("测试😮")
+        Row(
+            horizontalArrangement = Arrangement.End,
+        ) {
+            Button(
+                onClick = {
+                    onValueChange(datePickerState.selectedDateMillis)
+                }
+            ) {
+                Text("确定")
+            }
+        }
+        DatePicker(
+            state = datePickerState
+        )
+        Spacer(Modifier.height(20.dp))
+        Row(
+            modifier = Modifier.padding(4.dp).fillMaxWidth().clickable { viewModel.switchPage(Page.TIME) },
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Row {
+                Icon(Icons.Default.Alarm, "代表时间的图标")
+                Spacer(Modifier.width(4.dp))
+                Text(timeStr)
+            }
+            Icon(Icons.Default.Edit, "编辑具体时间")
+        }
     }
 }
 
 @Composable
-fun ShowTimePicker(value: Long?, onValueChange: (Long?) -> Unit) {
-
+fun ShowTimePicker(onValueChange: (Long?) -> Unit, viewModifier: TodoViewModel = viewModel()) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .windowInsetsPadding(
+                WindowInsets.systemBars
+                    .only(WindowInsetsSides.Bottom)
+                    .union(WindowInsets.ime)
+            )
+            .padding(
+                start = 16.dp,
+                end = 16.dp,
+                top = 12.dp,
+                bottom = 12.dp,
+            )
+    ) {
+        Text("测试")
+    }
 }
