@@ -95,7 +95,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.sun.org.apache.xml.internal.utils.StringComparable
 import io.github.codedrink5154.todoapp.data.TodoTask
 import io.github.codedrink5154.todoapp.utils.combineUtcDateAndLocalTime
 import io.github.codedrink5154.todoapp.utils.instantToDateTime
@@ -371,7 +370,6 @@ fun EditTaskSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val page by viewModel.page.collectAsStateWithLifecycle()
-    val deadline by viewModel.deadline.collectAsStateWithLifecycle()
 
     ModalBottomSheet(
         onDismissRequest = viewModel::closeEditor,

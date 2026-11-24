@@ -123,6 +123,7 @@ class TodoViewModel : ViewModel() {
         _id.value = id // 更新id
         clearForm()
         val index = _todoList.indexOfFirst { it.id == id } // 取得制定任务的index
+        if (index == -1) return
         _title.value = _todoList[index].title
         _description.value = _todoList[index].description
         _category.value = _todoList[index].category
@@ -133,9 +134,11 @@ class TodoViewModel : ViewModel() {
 
     fun syncToList() {
         val index = _todoList.indexOfFirst { it.id == _id.value }
+        val draftTitle = _title.value.trim()
         if (index < 0) return
+        val oldTitle = _todoList[index].title
         _todoList[index] = _todoList[index].copy(
-            title = _title.value,
+            title = if (draftTitle.isBlank()) oldTitle else _title.value,
             description = _description.value,
             category = _category.value,
             deadline = _deadline.value,
@@ -172,7 +175,6 @@ class TodoViewModel : ViewModel() {
 
     fun updateDeadline(value: Long?) {
         _deadline.value = value
-        _remind.value = null
     }
 
     fun updateCategory(value: String?) {
