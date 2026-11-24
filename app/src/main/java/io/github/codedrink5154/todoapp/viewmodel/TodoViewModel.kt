@@ -169,9 +169,8 @@ class TodoViewModel : ViewModel() {
     }
 
     fun updateDeadline(value: Long?) {
-        _remind.value = null
-        if (value == null) return
         _deadline.value = value
+        _remind.value = null
     }
 
     fun updateCategory(value: String?) {

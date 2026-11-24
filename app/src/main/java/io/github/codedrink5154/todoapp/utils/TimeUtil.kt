@@ -1,8 +1,9 @@
 package io.github.codedrink5154.todoapp.utils
 
 import java.time.Instant
-import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -23,4 +24,19 @@ fun instantToDateTime(value: Instant?): ZonedDateTime? {
 fun ZonedDateTime?.toStringZHCN(): String {
     if (this == null) return "无时间"
     return this.format(DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH:mm"))
+}
+
+fun combineUtcDateAndLocalTime(
+    dateUtcMillis: Long?,
+    localTime: LocalTime,
+    zoneId: ZoneId = ZoneId.systemDefault(),
+): Long? {
+    if (dateUtcMillis == null) return null
+    val localDate = Instant.ofEpochMilli(dateUtcMillis)
+        .atZone(ZoneOffset.UTC)
+        .toLocalDate()
+    return localDate.atTime(localTime)
+        .atZone(zoneId)
+        .toInstant()
+        .toEpochMilli()
 }

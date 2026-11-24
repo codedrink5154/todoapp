@@ -85,6 +85,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sun.org.apache.xml.internal.utils.StringComparable
 import io.github.codedrink5154.todoapp.data.TodoTask
+import io.github.codedrink5154.todoapp.utils.combineUtcDateAndLocalTime
 import io.github.codedrink5154.todoapp.utils.instantToDateTime
 import io.github.codedrink5154.todoapp.utils.longToInstant
 import io.github.codedrink5154.todoapp.utils.toStringZHCN
@@ -486,12 +487,16 @@ fun ShowTaskOverview(viewModel: TodoViewModel) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShowDatePicker(onValueChange: (Long?) -> Unit, viewModel: TodoViewModel = viewModel()) {
-    var dateTime = viewModel.deadline.collectAsStateWithLifecycle().value
-    var instant = if (dateTime != null) Instant.ofEpochMilli(dateTime) else Instant.now()
-    var datePickerState = rememberDatePickerState(
+    val timeMillis = viewModel.deadline.collectAsStateWithLifecycle().value
+    val instant = if (timeMillis != null) Instant.ofEpochMilli(timeMillis) else Instant.now()
+    val localTime = instant.atZone(ZoneId.systemDefault())
+        .toLocalTime()
+        .withSecond(0)
+        .withNano(0)
+    val datePickerState = rememberDatePickerState(
         initialSelectedDate = instant.atZone(ZoneId.systemDefault()).toLocalDate()
     )
-    val timeStr: String = instant.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("HH:mm"))
+    val timeStr: String = localTime.format(DateTimeFormatter.ofPattern("HH:mm"))
 
     Column(
         modifier = Modifier
@@ -521,7 +526,9 @@ fun ShowDatePicker(onValueChange: (Long?) -> Unit, viewModel: TodoViewModel = vi
 
             TextButton(
                 onClick = {
-                    onValueChange(datePickerState.selectedDateMillis)
+                    onValueChange(
+                        combineUtcDateAndLocalTime(datePickerState.selectedDateMillis, localTime)
+                    )
                     viewModel.switchPage(Page.OVERVIEW)
                 }
             ) {
@@ -538,7 +545,9 @@ fun ShowDatePicker(onValueChange: (Long?) -> Unit, viewModel: TodoViewModel = vi
         Spacer(Modifier.height(10.dp))
         Row(
             modifier = Modifier.padding(4.dp).fillMaxWidth().clickable {
-                onValueChange(datePickerState.selectedDateMillis)
+                onValueChange(
+                    combineUtcDateAndLocalTime(datePickerState.selectedDateMillis, localTime)
+                )
                 viewModel.switchPage(Page.TIME)
             },
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -555,8 +564,17 @@ fun ShowDatePicker(onValueChange: (Long?) -> Unit, viewModel: TodoViewModel = vi
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShowTimePicker(onValueChange: (Long?) -> Unit, viewModifier: TodoViewModel = viewModel()) {
+fun ShowTimePicker(onValueChange: (Long?) -> Unit, viewModel: TodoViewModel = viewModel()) {
+    val timeMillis = viewModel.deadline.collectAsStateWithLifecycle().value
+    val instant = if (timeMillis != null) Instant.ofEpochMilli(timeMillis) else Instant.now()
+    val localDateTime = instant.atZone(ZoneId.systemDefault())
+    val timePickerState = rememberTimePickerState(
+        initialHour = localDateTime.hour,
+        initialMinute = localDateTime.minute,
+        is24Hour = true,
+    )
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -572,6 +590,37 @@ fun ShowTimePicker(onValueChange: (Long?) -> Unit, viewModifier: TodoViewModel =
                 bottom = 12.dp,
             )
     ) {
-        Text("测试")
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "选择具体时间",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary,
+            )
+
+            TextButton(
+                onClick = {
+                    val newValue = localDateTime
+                        .withHour(timePickerState.hour)
+                        .withMinute(timePickerState.minute)
+                        .withSecond(0)
+                        .withNano(0)
+                        .toInstant()
+                        .toEpochMilli()
+                    onValueChange(newValue)
+                    viewModel.switchPage(Page.OVERVIEW)
+                }
+            ) {
+                Text(
+                    text = "保存设置",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.secondary,
+                )
+            }
+        }
+        TimePicker(timePickerState)
     }
 }
