@@ -14,6 +14,7 @@ enum class Page {
     OVERVIEW,
     DATE,
     TIME,
+    REMIND_SET,
 }
 
 class TodoViewModel : ViewModel() {
@@ -62,6 +63,7 @@ class TodoViewModel : ViewModel() {
     val category: StateFlow<String?> = _category.asStateFlow()
 
     /* 编辑任务时，任务的提醒时间 */
+    /* 注意这里使用分钟为单位，在写入数据库, 创建通知前要转换 */
     private val _remind = MutableStateFlow<Int?>(null)
     val remind: StateFlow<Int?> = _remind.asStateFlow()
 

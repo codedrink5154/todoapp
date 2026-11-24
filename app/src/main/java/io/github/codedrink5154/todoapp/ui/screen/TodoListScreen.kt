@@ -2,6 +2,7 @@ package io.github.codedrink5154.todoapp.ui.screen
 
 import android.graphics.Paint
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,11 +31,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.NotificationsOff
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.VolumeMute
 import androidx.compose.material.icons.outlined.RadioButtonChecked
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material3.Button
@@ -51,6 +58,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -77,6 +85,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -98,6 +107,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.drop
+import javax.swing.border.Border
 
 @Composable
 fun TodoListScreen(
@@ -374,6 +384,7 @@ fun EditTaskSheet(
             )
 
             Page.TIME -> ShowTimePicker(viewModel::updateDeadline)
+            Page.REMIND_SET -> ShowRemindSet({ viewModel.switchPage(Page.OVERVIEW) })
         }
     }
 }
@@ -480,7 +491,7 @@ fun ShowTaskOverview(viewModel: TodoViewModel) {
         EditTextRow("描述", description, false, viewModel::updateDescription)
         EditTextRow("分类", category ?: "", true, viewModel::updateCategory)
         EditTimeRow("截止时间", deadline) { viewModel.switchPage(Page.DATE) }
-        EditTimeRow("提醒时间", remind) { /* TODO: 打开提醒时间编辑器 */ }
+        EditTimeRow("提醒时间", remind) { viewModel.switchPage(Page.REMIND_SET) }
     }
 }
 
@@ -622,5 +633,93 @@ fun ShowTimePicker(onValueChange: (Long?) -> Unit, viewModel: TodoViewModel = vi
             }
         }
         TimePicker(timePickerState)
+    }
+}
+
+@Composable
+fun ShowRemindSet(goBack: () -> Unit, viewModel: TodoViewModel = viewModel()) {
+
+    @Composable
+    fun TimeSetRow(timeBefore: Int?) {
+        /* 订阅todoview中保存的值 */
+        val remindBefore by viewModel.remind.collectAsStateWithLifecycle()
+        /* 是否高亮本行,表示被选中 */
+        val highlight = timeBefore == remindBefore
+
+        /* 决定显示的文本 */
+        val text = when (timeBefore) {
+            null -> "不提醒"
+            0 -> "截止时提醒"
+            60 -> "1 小时前"
+            120 -> "2 小时前"
+            1440 -> "一天前"
+            else -> "$timeBefore 分钟前提醒"
+        }
+
+        Surface(
+            modifier = Modifier.height(60.dp).padding(horizontal = 10.dp).fillMaxWidth()
+                .clickable {/* TODO: 选择某个时间 */ },
+            shape = RoundedCornerShape(20),
+            color = MaterialTheme.colorScheme.surface,
+            border = if (highlight) BorderStroke(1.dp, MaterialTheme.colorScheme.primary) else null
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    if (timeBefore == null) Icons.Default.NotificationsOff else Icons.Default.NotificationsActive,
+                    "用作时间的图标"
+                )
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
+    }
+    // 函数定义结束
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .windowInsetsPadding(
+                WindowInsets.systemBars
+                    .only(WindowInsetsSides.Bottom)
+                    .union(WindowInsets.ime)
+            )
+            .padding(
+                start = 16.dp,
+                end = 16.dp,
+                top = 12.dp,
+                bottom = 12.dp,
+            ),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        /* 页面最上方的返回栏 */
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                Icons.Default.KeyboardArrowLeft, "返回按钮",
+                modifier = Modifier.size(30.dp).clickable {
+                    goBack()
+                })
+            Text(
+                text = "设置提醒时间",
+                style = MaterialTheme.typography.titleMedium,
+            )
+        }
+        Spacer(Modifier.height(2.dp))
+        /* 页面的主题内容: 可以选择的提醒时间 */
+        TimeSetRow(null) // 不提醒
+        TimeSetRow(0) // 在截止时间提醒
+        TimeSetRow(5)
+        TimeSetRow(15)
+        TimeSetRow(60)
+        TimeSetRow(120)
     }
 }
