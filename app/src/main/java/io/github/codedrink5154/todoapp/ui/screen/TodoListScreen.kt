@@ -425,9 +425,9 @@ fun EditTimeRow(label: String, value: Any?, onEdit: () -> Unit) {
     /* 显示的时间 */
     val time: String = when (value) {
         null -> "无时间"
-        is Int -> value.toString()
+        is Int -> if (value != 0) "$value 分钟前" else "截止时提醒"
         is Long -> (instantToDateTime(longToInstant(value))).toStringZHCN()
-        else -> "似乎出现错误啦~"
+        else -> "没见过的情况，似乎出现错误啦~"
     }
 
     Column {
@@ -658,7 +658,7 @@ fun ShowRemindSet(goBack: () -> Unit, viewModel: TodoViewModel = viewModel()) {
 
         Surface(
             modifier = Modifier.height(60.dp).padding(horizontal = 10.dp).fillMaxWidth()
-                .clickable {/* TODO: 选择某个时间 */ },
+                .clickable { viewModel.updateRemind(timeBefore) },
             shape = RoundedCornerShape(20),
             color = MaterialTheme.colorScheme.surface,
             border = if (highlight) BorderStroke(1.dp, MaterialTheme.colorScheme.primary) else null
@@ -721,5 +721,6 @@ fun ShowRemindSet(goBack: () -> Unit, viewModel: TodoViewModel = viewModel()) {
         TimeSetRow(15)
         TimeSetRow(60)
         TimeSetRow(120)
+        Spacer(Modifier.height(4.dp))
     }
 }
