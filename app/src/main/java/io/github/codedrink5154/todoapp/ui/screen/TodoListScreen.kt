@@ -408,6 +408,7 @@ fun EditTextRow(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onBackground,
         )
+        Spacer(Modifier.height(2.dp))
         TextField(
             value = value,
             onValueChange = { value -> onChange(value) },
@@ -431,7 +432,13 @@ fun EditTimeRow(label: String, value: Any?, onEdit: () -> Unit) {
     /* 显示的时间 */
     val time: String = when (value) {
         null -> "无时间"
-        is Int -> if (value != 0) "$value 分钟前" else "截止时提醒"
+        is Int -> when (value) {
+            0 -> "截止时提醒"
+            60 -> "1 小时前"
+            120 -> "2 小时前"
+            else -> "$value 分钟前"
+        }
+
         is Long -> (instantToDateTime(longToInstant(value))).toStringZHCN()
         else -> "没见过的情况，似乎出现错误啦~"
     }
