@@ -47,9 +47,11 @@ import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -58,6 +60,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -373,6 +376,11 @@ fun EditTaskSheet(
     ModalBottomSheet(
         onDismissRequest = viewModel::closeEditor,
         sheetState = sheetState,
+        shape = if (page == Page.DATE) {
+            RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
+        } else {
+            MaterialTheme.shapes.extraLarge
+        },
         dragHandle = null,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
@@ -437,7 +445,7 @@ fun EditTimeRow(label: String, value: Any?, onEdit: () -> Unit) {
             color = MaterialTheme.colorScheme.onBackground,
         )
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -446,18 +454,10 @@ fun EditTimeRow(label: String, value: Any?, onEdit: () -> Unit) {
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.secondary,
             )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                FilledIconButton(
-                    onClick = onEdit,
-                    modifier = Modifier.width(40.dp),
-                ) {
-                    Icon(
-                        Icons.Default.Edit,
-                        ""
-                    )
-                }
+            TextButton(onClick = onEdit) {
+                Icon(Icons.Default.Edit, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("编辑")
             }
         }
     }
@@ -492,6 +492,7 @@ fun ShowTaskOverview(viewModel: TodoViewModel) {
         EditTextRow("分类", category ?: "", true, viewModel::updateCategory)
         EditTimeRow("截止时间", deadline) { viewModel.switchPage(Page.DATE) }
         EditTimeRow("提醒时间", remind) { viewModel.switchPage(Page.REMIND_SET) }
+        Spacer(Modifier.height(20.dp))
     }
 }
 
@@ -522,56 +523,70 @@ fun ShowDatePicker(onValueChange: (Long?) -> Unit, viewModel: TodoViewModel = vi
                 end = 16.dp,
                 top = 12.dp,
                 bottom = 12.dp,
-            )
+            ),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Row(
+        Surface(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.surfaceContainer,
         ) {
-            Text(
-                text = "选择日期",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary,
+            DatePicker(
+                state = datePickerState,
+                modifier = Modifier.fillMaxWidth(),
+                colors = DatePickerDefaults.colors(
+                    selectedDayContainerColor = MaterialTheme.colorScheme.primary,
+                    selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
+                    todayContentColor = MaterialTheme.colorScheme.primary,
+                    todayDateBorderColor = MaterialTheme.colorScheme.primary,
+                ),
             )
-
-            TextButton(
-                onClick = {
+        }
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
                     onValueChange(
                         combineUtcDateAndLocalTime(datePickerState.selectedDateMillis, localTime)
                     )
-                    viewModel.switchPage(Page.OVERVIEW)
-                }
-            ) {
-                Text(
-                    text = "返回",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.secondary,
-                )
-            }
-        }
-        DatePicker(
-            state = datePickerState
-        )
-        Spacer(Modifier.height(10.dp))
-        Row(
-            modifier = Modifier.padding(4.dp).fillMaxWidth().clickable {
-                onValueChange(
-                    combineUtcDateAndLocalTime(datePickerState.selectedDateMillis, localTime)
-                )
-                viewModel.switchPage(Page.TIME)
-            },
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+                    viewModel.switchPage(Page.TIME)
+                },
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
         ) {
-            Row {
-                Icon(Icons.Default.Alarm, "代表时间的图标")
-                Spacer(Modifier.width(4.dp))
-                Text(timeStr)
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        Icons.Default.Alarm,
+                        contentDescription = "代表时间的图标",
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        text = timeStr,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+                Icon(
+                    Icons.Default.Edit,
+                    contentDescription = "编辑具体时间",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
-            Icon(Icons.Default.Edit, "编辑具体时间")
         }
-        Spacer(Modifier.height(20.dp))
+        BackBar {
+            onValueChange(
+                combineUtcDateAndLocalTime(datePickerState.selectedDateMillis, localTime)
+            )
+            viewModel.switchPage(Page.OVERVIEW)
+        }
     }
 }
 
@@ -599,40 +614,21 @@ fun ShowTimePicker(onValueChange: (Long?) -> Unit, viewModel: TodoViewModel = vi
                 end = 16.dp,
                 top = 12.dp,
                 bottom = 12.dp,
-            )
+            ),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = "选择具体时间",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary,
-            )
-
-            TextButton(
-                onClick = {
-                    val newValue = localDateTime
-                        .withHour(timePickerState.hour)
-                        .withMinute(timePickerState.minute)
-                        .withSecond(0)
-                        .withNano(0)
-                        .toInstant()
-                        .toEpochMilli()
-                    onValueChange(newValue)
-                    viewModel.switchPage(Page.OVERVIEW)
-                }
-            ) {
-                Text(
-                    text = "保存设置",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.secondary,
-                )
-            }
-        }
         TimePicker(timePickerState)
+        BackBar {
+            val newValue = localDateTime
+                .withHour(timePickerState.hour)
+                .withMinute(timePickerState.minute)
+                .withSecond(0)
+                .withNano(0)
+                .toInstant()
+                .toEpochMilli()
+            onValueChange(newValue)
+            viewModel.switchPage(Page.OVERVIEW)
+        }
     }
 }
 
@@ -698,22 +694,6 @@ fun ShowRemindSet(goBack: () -> Unit, viewModel: TodoViewModel = viewModel()) {
             ),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        /* 页面最上方的返回栏 */
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                Icons.Default.KeyboardArrowLeft, "返回按钮",
-                modifier = Modifier.size(30.dp).clickable {
-                    goBack()
-                })
-            Text(
-                text = "设置提醒时间",
-                style = MaterialTheme.typography.titleMedium,
-            )
-        }
-        Spacer(Modifier.height(2.dp))
         /* 页面的主题内容: 可以选择的提醒时间 */
         TimeSetRow(null) // 不提醒
         TimeSetRow(0) // 在截止时间提醒
@@ -721,6 +701,24 @@ fun ShowRemindSet(goBack: () -> Unit, viewModel: TodoViewModel = viewModel()) {
         TimeSetRow(15)
         TimeSetRow(60)
         TimeSetRow(120)
-        Spacer(Modifier.height(4.dp))
+        Spacer(Modifier.height(2.dp))
+        BackBar(goBack)
     }
+}
+
+@Composable
+fun BackBar(goBack: () -> Unit) {
+    /* 返回栏 */
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable { goBack() },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.End,
+    ) {
+        TextButton(onClick = goBack) {
+            Icon(Icons.Default.CheckCircle, contentDescription = null)
+            Spacer(Modifier.width(8.dp))
+            Text("完成")
+        }
+    }
+    Spacer(Modifier.height(16.dp))
 }
