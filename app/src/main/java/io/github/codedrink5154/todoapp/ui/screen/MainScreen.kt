@@ -35,6 +35,7 @@ import io.github.codedrink5154.todoapp.navigation.Focus
 import io.github.codedrink5154.todoapp.navigation.TodoList
 import io.github.codedrink5154.todoapp.navigation.UserModify
 import io.github.codedrink5154.todoapp.navigation.UserPage
+import io.github.codedrink5154.todoapp.notification.NotificationPermission
 import io.github.codedrink5154.todoapp.viewmodel.AppViewModel
 import io.github.codedrink5154.todoapp.viewmodel.TodoViewModel
 
@@ -43,8 +44,19 @@ import io.github.codedrink5154.todoapp.viewmodel.TodoViewModel
 fun MainScreen(appViewModel: AppViewModel) {
     val context = LocalContext.current
 
+    val permissionResult = NotificationPermission.hasPermission(context)
+
+    val ask = NotificationPermission.rememberNotificationPermissionLauncher()
+
+    LaunchedEffect(permissionResult) {
+        if (!permissionResult) {
+            ask()
+        }
+    }
+
+    val currentUser by appViewModel.currentUser.collectAsStateWithLifecycle()
     BackStack.stack = rememberNavBackStack(
-        if (appViewModel.currentUser.value == null) Auth else TodoList
+        if (currentUser == null) Auth else TodoList
     )
 
     val currentTab = BackStack.getCurrent()
