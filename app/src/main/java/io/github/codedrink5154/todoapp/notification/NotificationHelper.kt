@@ -1,9 +1,11 @@
 package io.github.codedrink5154.todoapp.notification
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import io.github.codedrink5154.todoapp.R
@@ -22,20 +24,19 @@ class NotificationHelper(
     /* 创建并注册通知渠道 */
     fun createChannel() {
         // 先检查API等级
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "任务提醒",
-                NotificationManager.IMPORTANCE_HIGH
-            )
-            val manager = context.getSystemService(
-                NotificationManager::class.java
-            )
-            manager.createNotificationChannel(channel)
-        }
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            "任务提醒",
+            NotificationManager.IMPORTANCE_HIGH
+        )
+        val manager = context.getSystemService(
+            NotificationManager::class.java
+        )
+        manager.createNotificationChannel(channel)
     }
 
     /* 直接显示通知 */
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun showNotification(
         id: Int,
         title: String,
@@ -50,7 +51,6 @@ class NotificationHelper(
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .build()
-
 
         // 使用上方定义的notificationManager
         notificationManager.notify(id, notification)

@@ -16,6 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.codedrink5154.todoapp.data.PreferencesManager
+import io.github.codedrink5154.todoapp.notification.NotificationHelper
 import io.github.codedrink5154.todoapp.ui.theme.TodoAppTheme
 import io.github.codedrink5154.todoapp.ui.screen.MainScreen
 import io.github.codedrink5154.todoapp.viewmodel.AppViewModel
@@ -32,7 +33,12 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
+
+        // 创建通知渠道
+        NotificationHelper(applicationContext).createChannel()
+
         enableEdgeToEdge()
 
         setContent {

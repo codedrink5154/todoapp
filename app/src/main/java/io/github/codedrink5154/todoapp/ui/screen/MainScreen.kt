@@ -1,6 +1,5 @@
 package io.github.codedrink5154.todoapp.ui.screen
 
-import android.content.Context
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -16,18 +15,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.ui.NavDisplay
-import io.github.codedrink5154.todoapp.data.User
 import io.github.codedrink5154.todoapp.navigation.Auth
 import io.github.codedrink5154.todoapp.navigation.BackStack
 import io.github.codedrink5154.todoapp.navigation.BottomNavBar
@@ -42,19 +38,17 @@ import io.github.codedrink5154.todoapp.viewmodel.TodoViewModel
 @ExperimentalMaterial3Api
 @Composable
 fun MainScreen(appViewModel: AppViewModel) {
+    val currentUser by appViewModel.currentUser.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val requestNotificationPermission =
+        NotificationPermission.rememberNotificationPermissionLauncher()
 
-    val permissionResult = NotificationPermission.hasPermission(context)
-
-    val ask = NotificationPermission.rememberNotificationPermissionLauncher()
-
-    LaunchedEffect(permissionResult) {
-        if (!permissionResult) {
-            ask()
+    LaunchedEffect(currentUser != null) {
+        if (currentUser != null && !NotificationPermission.hasPermission(context)) {
+            requestNotificationPermission()
         }
     }
 
-    val currentUser by appViewModel.currentUser.collectAsStateWithLifecycle()
     BackStack.stack = rememberNavBackStack(
         if (currentUser == null) Auth else TodoList
     )
