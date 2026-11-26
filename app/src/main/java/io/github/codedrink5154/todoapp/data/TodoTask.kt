@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class TodoTask(
-    val id: Long,
+    val id: Int,
     val title: String,
     val category: String?,
     val description: String = "",

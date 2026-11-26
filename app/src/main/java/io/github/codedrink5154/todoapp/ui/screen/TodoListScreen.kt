@@ -89,6 +89,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -370,9 +371,12 @@ fun EditTaskSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val page by viewModel.page.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     ModalBottomSheet(
-        onDismissRequest = viewModel::closeEditor,
+        onDismissRequest = {
+            viewModel.closeEditor(context)
+        },
         sheetState = sheetState,
         shape = if (page == Page.DATE) {
             RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
@@ -439,7 +443,7 @@ fun EditTimeRow(label: String, value: Any?, onEdit: () -> Unit) {
             else -> "$value 分钟前"
         }
 
-        is Long -> (instantToDateTime(longToInstant(value))).toStringZHCN()
+        is Long -> (longToInstant(value).instantToDateTime()).toStringZHCN()
         else -> "没见过的情况，似乎出现错误啦~"
     }
 

@@ -15,15 +15,29 @@ fun longToInstant(millis: Long?): Instant? {
 }
 
 /* Instant? -> ZonedDateTime? */
-fun instantToDateTime(value: Instant?): ZonedDateTime? {
-    if (value == null) return null
-    return value.atZone(ZoneId.systemDefault())
+fun Instant?.instantToDateTime(): ZonedDateTime? {
+    if (this == null) return null
+    return this.atZone(ZoneId.systemDefault())
 }
 
 /* ZonedDateTime? -> String */
 fun ZonedDateTime?.toStringZHCN(): String {
     if (this == null) return "无时间"
     return this.format(DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH:mm"))
+}
+
+/* 工具函数，将提醒时间（Int?）转换为Long? */
+// 在这里我们需要对空值做处理
+// 如果提醒时间为空，则不需要提醒；如果截止时间为空，也不需要提醒
+fun transformRemindTime(remind: Int?, until: Long?): Long? {
+    return if (until != null && remind != null) {
+        (until - remind * 60 * 1000L).takeIf {
+            // 在这里判断提醒时间是否有效，避免把提醒放到过去
+            it > System.currentTimeMillis()
+        }
+    } else {
+        null
+    }
 }
 
 fun combineUtcDateAndLocalTime(

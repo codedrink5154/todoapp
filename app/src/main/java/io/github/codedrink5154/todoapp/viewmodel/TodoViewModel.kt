@@ -1,5 +1,7 @@
 package io.github.codedrink5154.todoapp.viewmodel
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -9,6 +11,11 @@ import io.github.codedrink5154.todoapp.navigation.TodoList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import android.content.Context
+import android.content.Intent
+import android.widget.Toast
+import io.github.codedrink5154.todoapp.AlarmReceiver
+import io.github.codedrink5154.todoapp.utils.transformRemindTime
 
 enum class Page {
     OVERVIEW,
@@ -23,8 +30,8 @@ class TodoViewModel : ViewModel() {
     val isEditorOpen: StateFlow<Boolean> = _isAdding.asStateFlow()
 
     /* 正在编辑的任务ID */
-    private val _id = MutableStateFlow<Long?>(null)
-    val id: StateFlow<Long?> = _id.asStateFlow()
+    private val _id = MutableStateFlow<Int?>(null)
+    val id: StateFlow<Int?> = _id.asStateFlow()
 
     /* 详细编辑 */
     private val _isEditing = MutableStateFlow(false)
@@ -40,7 +47,7 @@ class TodoViewModel : ViewModel() {
     }
 
     /* 自增ID, 用于标识任务 */
-    private var nextId: Long = 1L
+    private var nextId: Int = 1
 
     /* 定义任务列表 */
     private val _todoList = mutableStateListOf<TodoTask>()
@@ -90,7 +97,7 @@ class TodoViewModel : ViewModel() {
     }
 
     /* 调整某个任务的完成/未完成状态 */
-    fun toggleDone(id: Long) {
+    fun toggleDone(id: Int) {
         val index = _todoList.indexOfFirst { it.id == id }
         if (index < 0) return
 
@@ -119,7 +126,7 @@ class TodoViewModel : ViewModel() {
         _isAdding.value = false
     }
 
-    fun editTask(id: Long) {
+    fun editTask(id: Int) {
         _id.value = id // 更新id
         clearForm()
         val index = _todoList.indexOfFirst { it.id == id } // 取得制定任务的index
@@ -151,15 +158,54 @@ class TodoViewModel : ViewModel() {
         _isEditing.value = true
     }
 
-    fun closeEditor() {
+    /* 关闭任务编辑器 */
+    fun closeEditor(context: Context) {
         syncToList()
+        _todoList.firstOrNull { it.id == _id.value }?.let {
+            createNotificationAlarm(context, it)
+        }
         clearForm()
         _isEditing.value = false
     }
 
+    /* 创建定时通知任务 */
+    fun createNotificationAlarm(context: Context, task: TodoTask) {
+        val taskId = task.id
+        val taskTitle = task.title
+        val triggerTime = transformRemindTime(task.remind, task.deadline)
+        if (triggerTime != null) {
+            // 创建ALarmManager
+            val alarmManager = context.getSystemService(
+                Context.ALARM_SERVICE
+            ) as AlarmManager
+
+            // 创建一个Intent，以及要发送的数据
+            val intent = Intent(context, AlarmReceiver::class.java).apply {
+                putExtra("task_id", taskId)
+                putExtra("task_title", taskTitle)
+            }
+
+            // 封装PendingIntent
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                taskId,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            // 设置定时任务
+            alarmManager.setAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                triggerTime,
+                pendingIntent,
+            )
+            Toast.makeText(context, "已创建定时通知任务", Toast.LENGTH_LONG).show()
+        }
+    }
+
     /* 移除某个任务 */
     fun removeTask(
-        id: Long
+        id: Int
     ) {
         _todoList.removeAll { it.id == id }
     }
