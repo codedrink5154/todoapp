@@ -13,17 +13,19 @@ object NotificationPermission {
     /* 可以在任意位置调用 */
     fun hasPermission(context: Context): Boolean {
         return checkSelfPermission(
-                context,
-                "POST_NOTIFICATIONS"
-            ) == PackageManager.PERMISSION_GRANTED
+            context,
+            "POST_NOTIFICATIONS"
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     /* 用于申请权限,可以在某个Composable中调用 */
     /* 其返回值表示权限申请是否成功 */
     @Composable
     fun rememberNotificationPermissionLauncher(
+        // 回调，默认为空
         onResult: (Boolean) -> Unit = {},
     ): () -> Unit {
+        // 定义launcher用于获取权限
         val launcher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission(),
             onResult = onResult,

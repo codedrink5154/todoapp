@@ -40,10 +40,13 @@ import io.github.codedrink5154.todoapp.viewmodel.TodoViewModel
 fun MainScreen(appViewModel: AppViewModel) {
     val currentUser by appViewModel.currentUser.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    /* 保存权限请求函数 */
     val requestNotificationPermission =
         NotificationPermission.rememberNotificationPermissionLauncher()
 
+    // 用户登录触发
     LaunchedEffect(currentUser != null) {
+        // 检查用户是否登录，以及是否拥有权限
         if (currentUser != null && !NotificationPermission.hasPermission(context)) {
             requestNotificationPermission()
         }
