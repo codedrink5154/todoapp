@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -36,10 +37,12 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.NotificationsOff
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.VolumeMute
 import androidx.compose.material.icons.outlined.RadioButtonChecked
@@ -162,7 +165,7 @@ fun TodoListScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     items(items = todos, key = { it.id }) { task ->
-                        TodoRow(
+                        MediumTodoRow(
                             task = task,
                             onToggle = { todoViewModel.toggleDone(task.id) },
                             onClick = { todoViewModel.editTask(task.id) },
@@ -230,7 +233,92 @@ private fun EmptyTodoState(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun TodoRow(
+private fun MediumTodoRow(
+    task: TodoTask,
+    onToggle: () -> Unit,
+    onClick: () -> Unit,
+    viewModel: TodoViewModel = viewModel()
+) {
+    val deadlineString = if (task.deadline != null) {
+        Instant.ofEpochMilli(task.deadline).atZone(ZoneId.systemDefault()).toStringZHCN()
+    } else "无截止时间"
+
+    Surface(
+        modifier = Modifier.fillMaxWidth().clickable { onClick() },
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+    ) {
+        Row(
+            modifier = Modifier
+                .height(50.dp)
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Column(
+                modifier = Modifier.fillMaxHeight(),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+                horizontalAlignment = Alignment.Start,
+            ) {
+                // 任务标题
+                Text(
+                    text = task.title,
+                    modifier = Modifier,
+                    fontWeight = FontWeight.ExtraBold,
+                    style = MaterialTheme.typography.bodyLarge,
+                    textDecoration = if (task.done) {
+                        TextDecoration.LineThrough
+                    } else {
+                        TextDecoration.None
+                    },
+                    color = if (task.done) {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+
+                Text(
+                    text = deadlineString,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.secondary,
+                )
+
+            }
+            Row {
+                IconButton(
+                    onClick = { viewModel.removeTask(task.id) }
+                ) {
+                    Icon(Icons.Default.Delete, "删除任务")
+                }
+                IconToggleButton(
+                    checked = task.done,
+                    onCheckedChange = { onToggle() },
+                ) {
+                    Icon(
+                        imageVector = if (task.done) {
+                            Icons.Outlined.RadioButtonChecked
+                        } else {
+                            Icons.Outlined.RadioButtonUnchecked
+                        },
+                        contentDescription = if (task.done) "标记为未完成" else "标记为完成",
+                        tint = if (task.done) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SmallTodoRow(
     task: TodoTask,
     onToggle: () -> Unit,
     onClick: () -> Unit,
