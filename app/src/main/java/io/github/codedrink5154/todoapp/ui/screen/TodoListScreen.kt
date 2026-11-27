@@ -45,6 +45,8 @@ import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.VolumeMute
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.RadioButtonChecked
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material3.Button
@@ -292,7 +294,7 @@ private fun MediumTodoRow(
                 IconButton(
                     onClick = { viewModel.removeTask(task.id) }
                 ) {
-                    Icon(Icons.Default.Delete, "删除任务")
+                    Icon(Icons.Outlined.Delete, "删除任务")
                 }
                 IconToggleButton(
                     checked = task.done,
