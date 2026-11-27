@@ -41,7 +41,6 @@ import androidx.compose.runtime.isTraceInProgress
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -65,7 +64,6 @@ fun FocusScreen(innerPadding: PaddingValues, viewModel: FocusViewModel = viewMod
     @Composable
     fun TimeControlButtonRow() {
         val controlIcon = if (isTicking == TimerStatus.RUNNING) Icons.Default.Pause else Icons.Default.PlayArrow
-        val context = LocalContext.current
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
@@ -91,7 +89,7 @@ fun FocusScreen(innerPadding: PaddingValues, viewModel: FocusViewModel = viewMod
                     when (isTicking) {
                         TimerStatus.STOP -> viewModel.startFocusTimer()
                         TimerStatus.PAUSE -> {
-                            viewModel.resumeFocusTimer(context)
+                            viewModel.resumeFocusTimer()
                         }
 
                         TimerStatus.RUNNING -> viewModel.pauseFocusTimer()

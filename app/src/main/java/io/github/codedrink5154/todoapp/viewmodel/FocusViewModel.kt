@@ -1,6 +1,5 @@
 package io.github.codedrink5154.todoapp.viewmodel
 
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -67,6 +66,8 @@ class FocusViewModel : ViewModel() {
             it.copy(
                 remainingTime = _targetTime.value * 60 * 1000L,
                 totalDuration = _targetTime.value * 60 * 1000L,
+                status = TimerStatus.STOP,
+                isWorking = true,
             )
         }
         _selectedMode.update { newMode }
@@ -106,11 +107,35 @@ class FocusViewModel : ViewModel() {
                     if (_selectedMode.value == 1) {
                         // 如果是倒计时模式，就直接停止
                         _focusTimerState.update {
-                            it.copy(status = TimerStatus.STOP)
+                            it.copy(
+                                remainingTime = it.totalDuration,
+                                status = TimerStatus.STOP,
+                            )
                         }
                     } else {
                         // 如果是番茄钟模式，则需要更新目标时间，并开启新的计时器
-                        _targetTime.value = if (_focusTimerState.value.isWorking) 5 else 25
+                        if (_focusTimerState.value.isWorking) {
+                            _targetTime.value = 5
+                            _focusTimerState.update {
+                                it.copy(
+                                    isWorking = false,
+                                    remainingTime = _targetTime.value * 60 * 1000L,
+                                    totalDuration = _targetTime.value * 60 * 1000L,
+                                    status = TimerStatus.PAUSE
+                                )
+                            }
+                        } else {
+                            _targetTime.value = 25
+                            _focusTimerState.update {
+                                it.copy(
+                                    isWorking = true,
+                                    remainingTime = _targetTime.value * 60 * 1000L,
+                                    totalDuration = _targetTime.value * 60 * 1000L,
+                                    status = TimerStatus.PAUSE
+                                )
+                            }
+                        }
+                        _focusTimerState.value.status
                         startFocusTimer()
                     }
                     break
@@ -142,7 +167,7 @@ class FocusViewModel : ViewModel() {
     }
 
     /* 继续计时 */
-    fun resumeFocusTimer(context: Context) {
+    fun resumeFocusTimer() {
         if (_focusTimerState.value.status != TimerStatus.PAUSE) return
         startFocusTimer()
     }
